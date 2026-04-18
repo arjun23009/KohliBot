@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KohliBot — AI Cricket Coach</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0a;
+      color: #f0f0f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background Video */
+    .bg-video-wrap {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-video-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.35;
+    }
+
+    .bg-overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.6) 0%,
+        rgba(0,0,0,0.3) 40%,
+        rgba(0,0,0,0.7) 100%
+      );
+      z-index: 1;
+    }
+
+    /* Content */
+    .content {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Nav */
+    nav {
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      backdrop-filter: blur(10px);
+      background: rgba(0,0,0,0.3);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #f5a623, #c97f00);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 0 16px rgba(245,166,35,0.4);
+    }
+
+    .nav-logo-text {
+      font-size: 1.1rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #f5a623, #ffcd6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+    }
+
+    .nav-badge {
+      padding: 6px 16px;
+      background: rgba(245,166,35,0.1);
+      border: 1px solid rgba(245,166,35,0.3);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      color: #f5a623;
+      font-weight: 500;
+    }
+
+    /* Hero */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px 40px;
+      text-align: center;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      background: rgba(245,166,35,0.1);
+      border: 1px solid rgba(245,166,35,0.25);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      color: #f5a623;
+      font-weight: 500;
+      margin-bottom: 28px;
+      letter-spacing: 0.5px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(90deg, #f5a623, #ffcd6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: #999;
+      max-width: 480px;
+      line-height: 1.7;
+      margin-bottom: 48px;
+      font-weight: 300;
+    }
+
+    /* Section Cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      max-width: 820px;
+      width: 100%;
+      margin-bottom: 48px;
+    }
+
+    .card {
+      background: rgba(18,18,20,0.85);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 28px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: left;
+      text-decoration: none;
+      display: block;
+      backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--card-color);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px var(--card-color);
+    }
+
+    .card:hover::before { opacity: 1; }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-color);
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f0f0f0;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 0.82rem;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .card-arrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--card-color);
+      transition: gap 0.2s;
+    }
+
+    .card:hover .card-arrow { gap: 10px; }
+
+    /* Card colors */
+    .card-video {
+      --card-color: #f5a623;
+      --card-bg: rgba(245,166,35,0.08);
+    }
+
+    .card-batting {
+      --card-color: #3b82f6;
+      --card-bg: rgba(59,130,246,0.08);
+    }
+
+    .card-comm {
+      --card-color: #22c55e;
+      --card-bg: rgba(34,197,94,0.08);
+    }
+
+    .card-leader {
+      --card-color: #ef4444;
+      --card-bg: rgba(239,68,68,0.08);
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      padding: 20px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      max-width: 820px;
+      width: 100%;
+    }
+
+    .stat { text-align: center; }
+
+    .stat-number {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #f5a623;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .stat-divider {
+      width: 1px;
+      height: 32px;
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.75rem;
+      color: #333;
+      position: relative;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Video -->
+  <div class="bg-video-wrap">
+    <video autoplay muted loop playsinline>
+      <source src="/static/kohli_bg.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="bg-overlay"></div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Nav -->
+    <nav>
+      <div class="nav-logo">
+        <div class="nav-logo-icon">🏏</div>
+        <span class="nav-logo-text">KOHLIBOT</span>
+      </div>
+      <div class="nav-badge">⚡ AI Powered by Kohli's Experience</div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-tag">🏆 Train like the King</div>
+      <h1>Your Personal<br><span>Kohli Coach</span><br>is Here.</h1>
+      <p>Upload your batting video, ask technique questions, learn Kohli's mindset. Built for cricketers who want to be great — not just good.</p>
+
+      <!-- 4 Section Cards -->
+      <div class="cards-grid">
+
+        <a href="/chat/video" class="card card-video">
+          <div class="card-icon">🎥</div>
+          <h3>Video Analysis</h3>
+          <p>Upload your batting video. Get frame-by-frame technique feedback from Kohli's perspective.</p>
+          <span class="card-arrow">Start Analysis →</span>
+        </a>
+
+        <a href="/chat/batting" class="card card-batting">
+          <div class="card-icon">🏏</div>
+          <h3>Batting Coach</h3>
+          <p>Personalized batting drills, shot selection advice, and technique coaching tailored to Arjun's game.</p>
+          <span class="card-arrow">Start Training →</span>
+        </a>
+
+        <a href="/chat/communication" class="card card-comm">
+          <div class="card-icon">🗣️</div>
+          <h3>Communication Skills</h3>
+          <p>Learn how Kohli carries himself — body language, confidence, how to lead from the front.</p>
+          <span class="card-arrow">Start Learning →</span>
+        </a>
+
+        <a href="/chat/leadership" class="card card-leader">
+          <div class="card-icon">👑</div>
+          <h3>Leadership & Mindset</h3>
+          <p>Captaincy philosophy, handling pressure, building a winning mentality like Kohli.</p>
+          <span class="card-arrow">Start Growing →</span>
+        </a>
+
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-bar">
+        <div class="stat">
+          <div class="stat-number">70+</div>
+          <div class="stat-label">International 100s</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <div class="stat-number">4</div>
+          <div class="stat-label">Coaching Modules</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <div class="stat-number">AI</div>
+          <div class="stat-label">Powered Analysis</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <div class="stat-number">Free</div>
+          <div class="stat-label">Always</div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer>KohliBot is an AI project. Not affiliated with Virat Kohli or BCCI.</footer>
+
+  </div>
+
+</body>
+</html>
