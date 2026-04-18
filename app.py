@@ -12,7 +12,7 @@ app.secret_key = str(uuid.uuid4())
 
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"mp4", "mov", "avi", "mkv", "webm"}
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 SECTION_CONFIG = {
     "video": {
